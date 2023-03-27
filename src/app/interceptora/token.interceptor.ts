@@ -13,6 +13,10 @@ import { TokenService } from '@services/token.service';
 
 const CHECK_TOKEN = new HttpContextToken<boolean>(() => false);
 
+export function checkToken(){
+  return new HttpContext().set(CHECK_TOKEN, true);
+}
+
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
@@ -21,7 +25,11 @@ export class TokenInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    return this.addToken(request, next);
+   if (request.context.get(CHECK_TOKEN)){
+
+     return this.addToken(request, next);
+   }
+   return next.handle(request);
   }
 
   private addToken(request: HttpRequest<unknown>, next: HttpHandler){
