@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import { DataSourceUser } from './data-source';
 import { UsersService } from '@services/users.service';
+import { AuthService } from '@services/auth.service';
+import { User } from '@models/users.model';
 
 @Component({
   selector: 'app-users-table',
@@ -11,9 +13,11 @@ export class UsersTableComponent implements OnInit {
 
   dataSource = new DataSourceUser();
   columns: string[] = ['id', 'avatar', 'name', 'email'];
+  user: User | null = null;
 
   constructor(
     private userServices : UsersService,
+    private authService : AuthService,
 
   ) {
 
@@ -43,6 +47,11 @@ ngOnInit(): void {
   this.userServices.getUsers()
   .subscribe(users => {
     this.dataSource.init(users);
+  })
+
+  this.authService.getProfile()
+  .subscribe(user =>{
+    this.user = user;
   })
 }
 

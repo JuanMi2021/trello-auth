@@ -5,12 +5,14 @@ import { switchMap, tap } from 'rxjs/operators';
 import { TokenService } from '@services/token.service';
 import { ResponseLogin } from '@models/auth.model';
 import { User } from '@models/users.model';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   apiUrl = environment.API_URL;
+  user$ = new BehaviorSubject<User | null>(null);
 
   constructor(
     private http: HttpClient,
