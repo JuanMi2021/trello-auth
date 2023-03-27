@@ -3,11 +3,15 @@ import {
   HttpRequest,
   HttpHandler,
   HttpEvent,
-  HttpInterceptor
+  HttpInterceptor,
+  HttpContextToken,
+  HttpContext
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { TokenService } from '@services/token.service';
+
+const CHECK_TOKEN = new HttpContextToken<boolean>(() => false);
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
