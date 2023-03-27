@@ -18,6 +18,11 @@ export class AuthService {
     private http: HttpClient,
     private tokenService: TokenService,
   ) { }
+
+  getDataUser(){
+    return this.user$.getValue();
+  }
+
   login(email: string, password: string) {
     return this.http.post<ResponseLogin>(`${this.apiUrl}/api/v1/auth/login`, {
       email,
