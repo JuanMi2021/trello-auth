@@ -26,36 +26,73 @@ import { ToDo, Column } from '@models/todo.model';
 export class BoardComponent {
   columns: Column[] = [
     {
-      title: 'ToDo',
+      title: 'Hacer',
       todos: [
         {
           id: '1',
-          title: 'Make dishes',
+          title: 'JuanMi'
         },
         {
-          id: '2',
-          title: 'Buy a unicorn',
+          id: '6',
+          title: 'Judith'
         },
-      ],
+        {
+          id: '7',
+          title: 'Fernando'
+        },
+        {
+          id: '8',
+          title: 'Antonio'
+        }
+      ]
     },
     {
-      title: 'Doing',
+      title: '25%',
       todos: [
         {
           id: '3',
-          title: 'Watch Angular Path in Platzi',
+          title: 'Robert'
         },
-      ],
+        {
+          id: '9',
+          title: 'Jose'
+        },
+        {
+          id: '10',
+          title: 'Sebas'
+        }
+      ]
     },
     {
-      title: 'Done',
+      title: '50%',
       todos: [
         {
           id: '4',
-          title: 'Play video games',
-        },
-      ],
+          title: 'Santi'
+        },        {
+          id: '11',
+          title: 'JuanMa'
+        }
+      ]
     },
+    {
+      title: 'Finalizado',
+      todos: [
+        {
+          id: '5',
+          title: 'Javi'
+        },        {
+          id: '12',
+          title: 'Paula'
+        },        {
+          id: '13',
+          title: 'Bartu'
+        },        {
+          id: '2',
+          title: 'Cristina'
+        }
+      ]
+    }
   ];
 
   todos: ToDo[] = [];
@@ -83,7 +120,7 @@ export class BoardComponent {
 
   addColumn() {
     this.columns.push({
-      title: 'New Column',
+      title: 'Nueva Columna',
       todos: [],
     });
   }
