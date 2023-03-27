@@ -74,7 +74,13 @@ getProfile(){
     headers: {
       Authorization: `Bearer ${token}`
     }
-  });
+  })
+  .pipe(
+    tap(user => {
+      this.user$.next(user);
+    })
+  );
+
 }
 
 
