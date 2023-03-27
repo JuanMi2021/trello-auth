@@ -60,4 +60,8 @@ changePassword(token:string, newPassword:string){
   });
 }
 
+logout(){
+  this.tokenService.removeToken();
+}
+
 }
