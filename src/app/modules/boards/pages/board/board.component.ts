@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import {
   CdkDragDrop,
   moveItemInArray,
@@ -7,7 +9,13 @@ import {
 import { Dialog } from '@angular/cdk/dialog';
 import { TodoDialogComponent } from '@boards/components/todo-dialog/todo-dialog.component';
 
-import { ToDo, Column } from '@models/todo.model';
+import { BoardsService } from '@services/boards.service';
+import { CardsService } from '@services/card.service';
+import { Board } from '@models/board.model';
+import { Card } from '@models/card.model';
+import { List } from '@models/list.model';
+import { ListService } from '@services/list.service';
+import { BACKGROUNDS } from '@models/colors.model';
 
 @Component({
   selector: 'app-board',
@@ -23,85 +31,44 @@ import { ToDo, Column } from '@models/todo.model';
     `,
   ],
 })
-export class BoardComponent {
-  columns: Column[] = [
-    {
-      title: 'Hacer',
-      todos: [
-        {
-          id: '1',
-          title: 'JuanMi'
-        },
-        {
-          id: '6',
-          title: 'Judith'
-        },
-        {
-          id: '7',
-          title: 'Fernando'
-        },
-        {
-          id: '8',
-          title: 'Antonio'
-        }
-      ]
-    },
-    {
-      title: '25%',
-      todos: [
-        {
-          id: '3',
-          title: 'Robert'
-        },
-        {
-          id: '9',
-          title: 'Jose'
-        },
-        {
-          id: '10',
-          title: 'Sebas'
-        }
-      ]
-    },
-    {
-      title: '50%',
-      todos: [
-        {
-          id: '4',
-          title: 'Santi'
-        },        {
-          id: '11',
-          title: 'JuanMa'
-        }
-      ]
-    },
-    {
-      title: 'Finalizado',
-      todos: [
-        {
-          id: '5',
-          title: 'Javi'
-        },        {
-          id: '12',
-          title: 'Paula'
-        },        {
-          id: '13',
-          title: 'Bartu'
-        },        {
-          id: '2',
-          title: 'Cristina'
-        }
-      ]
-    }
-  ];
+export class BoardComponent implements OnInit, OnDestroy {
 
-  todos: ToDo[] = [];
-  doing: ToDo[] = [];
-  done: ToDo[] = [];
 
-  constructor(private dialog: Dialog) {}
+  board: Board | null = null;
+  inputCard = new FormControl<string>('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  })
+  inputList = new FormControl<string>('', {
+    nonNullable: true,
+    validators: [Validators.required],
+  })
 
-  drop(event: CdkDragDrop<ToDo[]>) {
+  showListForm = false;
+  colorBackgrounds = BACKGROUNDS;
+
+  constructor(
+    private dialog: Dialog,
+    private route: ActivatedRoute,
+    private boardsService: BoardsService,
+    private cardsService: CardsService,
+    private listService: ListService
+  ) { }
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('boardId');
+      if (id) {
+        this.getBoard(id);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.boardsService.setBackgroundColor('sky');
+  }
+
+
+  drop(event: CdkDragDrop<Card[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -116,25 +83,106 @@ export class BoardComponent {
         event.currentIndex
       );
     }
+    //after
+    const position = this.boardsService.getPosition(event.container.data, event.currentIndex);
+    const card = event.container.data[event.currentIndex];
+    const listId = event.container.id;
+
+    this.updateCard(card, position, listId);
   }
 
-  addColumn() {
-    this.columns.push({
-      title: 'Nueva Columna',
-      todos: [],
-    });
+  addList() {
+    const title = this.inputList.value;
+    if(this.board){
+      this.listService.create({
+        title,
+        boardId:this.board.id,
+        position : this.boardsService.getPositionNewItem(this.board.lists)
+      })
+      .subscribe(list=>{
+        this.board?.lists.push({
+          ...list,
+          cards:[],
+        });
+
+        this.inputList.setValue('');
+      })
+    }
+
   }
 
-  openDialog(todo: ToDo) {
+  openDialog(card: Card) {
     const dialogRef = this.dialog.open(TodoDialogComponent, {
       minWidth: '300px',
       maxWidth: '50%',
       data: {
-        todo: todo,
+        card: card,
       },
     });
     dialogRef.closed.subscribe((output) => {
-      console.log(output);
+      if (output) {
+        console.log(output);
+      }
     });
+  }
+
+  private getBoard(id: string) {
+    this.boardsService.getBoard(id)
+      .subscribe(board => {
+        this.board = board;
+        this.boardsService.setBackgroundColor(this.board.backgroundColor)
+      })
+  }
+
+  private updateCard(card: Card, position: number, listId: string | number) {
+    this.cardsService.update(card.id, { position, listId })
+      .subscribe((cardUpdate) => {
+        console.log(cardUpdate);
+      })
+  }
+
+  openFormCard(list: List) {
+    if (this.board?.lists) {
+      this.board.lists = this.board.lists.map(iteratorList => {
+        if (iteratorList.id === list.id) {
+          return {
+            ...iteratorList,
+            showCardForm: true,
+          }
+        }
+        return {
+          ...iteratorList,
+          showCardForm: false,
+        }
+      });
+    }
+  }
+
+  createCard(list: List) {
+    const title = this.inputCard.value;
+    if (this.board) {
+      this.cardsService.create({
+        title,
+        listId: list.id,
+        boardId: this.board.id,
+        position: this.boardsService.getPositionNewItem(list.cards)
+      }).subscribe(card => {
+        list.cards.push(card);
+        this.inputCard.setValue('');
+      })
+    }
+
+  }
+
+  closeCardForm(list: List) {
+    list.showCardForm = false;
+  }
+
+  get colors() {
+    if(this.board){
+      const classes = this.colorBackgrounds[this.board.backgroundColor];
+      return classes ? classes : {};
+    }
+    return{};
   }
 }

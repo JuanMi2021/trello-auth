@@ -1,19 +1,22 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { BoardsService } from '@services/boards.service';
+
 import {
   faBell,
   faInfoCircle,
   faClose,
   faAngleDown
 } from '@fortawesome/free-solid-svg-icons';
+
 import { AuthService } from '@services/auth.service';
-import { TokenService } from '@services/token.service';
+import { Colors, NAVBAR_BACKGROUNDS } from '@models/colors.model';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
 })
-export class NavbarComponent  {
+export class NavbarComponent {
   faBell = faBell;
   faInfoCircle = faInfoCircle;
   faClose = faClose;
@@ -21,23 +24,34 @@ export class NavbarComponent  {
 
   isOpenOverlayAvatar = false;
   isOpenOverlayBoards = false;
+  isOpenOverlayCreateBoard = false;
 
   user$ = this.authService.user$;
+  navBarBackgroundColor: Colors = 'sky';
+  navBarColors = NAVBAR_BACKGROUNDS
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private tokenService :TokenService
-  ) {}
+    private boardService: BoardsService
+  ) {
+    this.boardService.backgroundColor.subscribe(color=>{
+      this.navBarBackgroundColor = color;
+    })
+  }
 
-  logout(){
+  logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-  isValidtoken(){
-    console.log(this.tokenService.isValidToken());
 
+  close(event : boolean){
+    this.isOpenOverlayCreateBoard = event;
+  }
 
+  get colors (){
+    const classes = this.navBarColors[this.navBarBackgroundColor];
+    return classes ? classes : [];
   }
 
 }

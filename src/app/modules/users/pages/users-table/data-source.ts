@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/collections';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { User } from '@models/users.model';
+import { User } from '@models/user.model';
 
 export class DataSourceUser extends DataSource<User> {
 

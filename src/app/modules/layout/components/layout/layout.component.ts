@@ -1,16 +1,19 @@
-import { Component,OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '@services/auth.service';
 
 @Component({
   selector: 'app-layout',
   templateUrl: './layout.component.html',
 })
-export class LayoutComponent implements OnInit{
+export class LayoutComponent implements OnInit {
   constructor(
-    private authServices : AuthService
+    private authService: AuthService
   ) {}
-  ngOnInit(): void {
-    this.authServices.getProfile()
-    .subscribe();
+
+  ngOnInit() {
+    this.authService.getProfile()
+    .subscribe(() => {
+      console.log('get profile');
+    });
   }
 }

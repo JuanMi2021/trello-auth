@@ -13,13 +13,9 @@ import { AuthService } from '@services/auth.service';
 })
 export class RegisterFormComponent {
 
-
   formUser = this.formBuilder.nonNullable.group({
-    email: ['', [Validators.email, Validators.required]]
-  })
-
-
-
+    email: ['', [Validators.email, Validators.required]],
+  });
 
   form = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required]],
@@ -27,7 +23,7 @@ export class RegisterFormComponent {
     password: ['', [Validators.minLength(8), Validators.required]],
     confirmPassword: ['', [Validators.required]],
   }, {
-    validators: [CustomValidators.MatchValidator('password', 'confirmPassword')]
+    validators: [ CustomValidators.MatchValidator('password', 'confirmPassword') ]
   });
   status: RequestStatus = 'init';
   statusUser: RequestStatus = 'init';
@@ -40,54 +36,52 @@ export class RegisterFormComponent {
     private formBuilder: FormBuilder,
     private router: Router,
     private authService: AuthService
-  ) { }
+  ) {}
 
   register() {
     if (this.form.valid) {
       this.status = 'loading';
-      const { email, password, name } = this.form.getRawValue();
-      this.authService.registerAndLogin(email, password, name)
-        .subscribe({
-          next: () => {
-            this.status = 'success';
-            this.router.navigate(['/app/boards/']);
-          },
-          error: (error) => {
-            this.status = 'failed'
-            console.log(error);
-
-          }
-        })
+      const { name, email, password } = this.form.getRawValue();
+      this.authService.registerAndLogin(name, email, password)
+      .subscribe({
+        next: () => {
+          this.status = 'success';
+          this.router.navigate(['/app/boards']);
+        },
+        error: (error) => {
+          this.status = 'failed';
+          console.log(error);
+        }
+      })
     } else {
       this.form.markAllAsTouched();
     }
   }
+
   validateUser() {
     if (this.formUser.valid) {
       this.statusUser = 'loading';
       const { email } = this.formUser.getRawValue();
       this.authService.isAvailable(email)
-        .subscribe({
-          next: (rta) => {
-            this.statusUser = 'success';
-            if (rta.isAvailable) {
-              this.showRegister = true;
-              this.form.controls.email.setValue(email);
-            } else {
-              this.router.navigate(['/login'],{
-                queryParams : {email}
-              });
-
-            }
-          },
-          error: (error) => {
-            this.statusUser = 'failed'
-            console.log(error);
-
+      .subscribe({
+        next: (rta) => {
+          this.statusUser = 'success';
+          if (rta.isAvailable) {
+            this.showRegister = true;
+            this.form.controls.email.setValue(email);
+          } else {
+            this.router.navigate(['/login'], {
+              queryParams: { email }
+            });
           }
-        })
+        },
+        error: (error) => {
+          this.statusUser = 'failed';
+          console.log(error);
+        }
+      })
     } else {
-      this.form.markAllAsTouched();
+      this.formUser.markAllAsTouched();
     }
   }
 }
